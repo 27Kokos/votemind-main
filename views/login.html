@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Вход — VoteMind</title>
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="auth">
+  <div class="auth-card">
+    <h2 class="auth-title">Добро пожаловать</h2>
+
+    <form action="/auth/login" method="POST" class="auth-form">
+      <div class="auth-input-group">
+        <input name="username" class="auth-input" placeholder="Никнейм" required autocomplete="username" />
+        <i class="fas fa-user auth-icon"></i>
+      </div>
+
+      <div class="auth-input-group">
+        <input type="password" name="password" class="auth-input" placeholder="Пароль" required autocomplete="current-password" />
+        <i class="fas fa-lock auth-icon"></i>
+      </div>
+
+      <button type="submit" class="auth-btn">Войти</button>
+    </form>
+
+    <!-- Разделитель -->
+    <div class="auth-divider">
+      <span>или</span>
+    </div>
+
+    <p class="auth-links">
+      <a href="/register">Нет аккаунта? Зарегистрироваться</a>
+    </p>
+  </div>
+</body>
+</html>

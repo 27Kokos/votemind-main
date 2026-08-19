@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Профиль — VoteMind</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <!-- Подключаем наши CSS -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/light-theme.css">
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/profile.css">
+  <link rel="stylesheet" href="/css/notifications.css">
+  <link rel="stylesheet" href="/css/adaptive.css">
+  
+</head>
+<body>
+
+  <!-- Хедер -->
+ <header>
+  <div class="header-wrapper relative">
+    <!-- НОВАЯ ОБЁРТКА ДЛЯ ИСПРАВЛЕНИЯ ОБВОДКИ -->
+    <div class="header-border-frame">
+      <div class="header-container">
+        <a href="/dashboard" class="font-bold">VoteMind</a>
+        <div class="flex-between" style="gap: 12px;">
+          <a href="#" class="relative" onclick="window.toggleNotifications(event)">
+            <i class="fas fa-bell text-base hover:text-indigo-600"></i>
+            <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-indigo-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span>
+          </a>
+          <a href="#" class="ml-3" onclick="toggleTheme(event)">
+            <i id="theme-icon" class="fas fa-moon"></i>
+          </a>
+          <a href="/profile" class="flex-between hover:bg-gray-100 px-2 py-1 rounded-lg" style="gap: 6px;">
+            <img id="header-avatar" src="/img/default-avatar.png" class="avatar" alt="Профиль">
+            <span class="text-xs font-medium">Профиль</span>
+          </a>
+          <a href="/auth/logout" class="text-xs text-red-600 hover:text-red-800">Выйти</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Меню уведомлений -->
+    <div id="notifications-menu" class="glass hidden w-80 rounded-xl shadow-xl z-50 overflow-hidden">
+      <div class="p-3 border-b border-white/30 text-sm font-medium text-gray-700">Уведомления</div>
+      <div id="notifications-list">
+        <div class="p-3 text-gray-500 text-sm">Загрузка...</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+  <!-- Отступ под хедер -->
+  <div class="spacer" style="height: 80px;"></div>
+
+
+   <!-- Контент -->
+  <main class="container">
+    <!-- Карточка профиля -->
+    <div class="card-profile visible text-center">
+      <img id="current-avatar" src="/img/default-avatar.png" class="avatar-large" alt="Аватар">
+      <h1 class="text-3xl font-bold mb-2">Ваш профиль</h1>
+      <p>Персональная статистика и активность</p>
+    </div>
+
+    <!-- Инфо и статистика -->
+    <div class="profile-grid mb-8">
+      <!-- Основная информация -->
+      <div class="card p-6">
+        <h3 class="section-title">
+          <i class="fas fa-user text-indigo-600"></i> Личные данные
+        </h3>
+        <div class="space-y-4">
+          <div class="flex-between">
+            <span class="text-sm">Имя пользователя</span>
+            <span class="font-medium" id="username">—</span>
+          </div>
+          <div class="flex-between">
+            <span class="text-sm">Дата регистрации</span>
+            <span class="font-medium" id="created-at">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Статистика -->
+      <div class="card p-6">
+        <h3 class="section-title">
+          <i class="fas fa-chart-bar text-indigo-600"></i> Статистика
+        </h3>
+        <div class="grid-two text-sm">
+          <div class="stat-item">
+            <i class="fas fa-lightbulb text-indigo-400"></i>
+            <span>Предложено</span>
+            <strong id="total-proposals">0</strong>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-check-circle text-green-500"></i>
+            <span>Одобрено</span>
+            <strong id="approved-proposals">—</strong>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-vote-yea text-blue-500"></i>
+            <span>Проголосовал</span>
+            <strong id="total-votes">—</strong>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-door-open text-purple-500"></i>
+            <span>Комнат</span>
+            <strong id="total-rooms">—</strong>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-bolt text-yellow-500"></i>
+            <span>Активность</span>
+            <strong class="text-blue-600" id="active-room">—</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- История активности -->
+    <div class="card p-6 mb-8">
+      <h3 class="section-title">
+        <i class="fas fa-history text-indigo-600"></i> История активности
+      </h3>
+      <div id="activity-list" class="space-y-3">
+        <div class="text-gray-500 text-sm">Загрузка...</div>
+      </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div class="card p-6 mb-8">
+      <h3 class="section-title">
+        <i class="fas fa-bell text-indigo-600"></i> Уведомления
+      </h3>
+      <label class="flex-between cursor-pointer">
+        <div class="toggle-switch">
+          <input type="checkbox" id="toggle-notifications">
+          <span class="toggle-bg" id="toggle-bg"></span>
+        </div>
+        <span id="toggle-label" class="text-sm font-medium">Загрузка...</span>
+      </label>
+    </div>
+
+    <!-- Кнопка изменить фото -->
+    <div class="flex justify-center mb-8">
+      <form id="avatar-form" action="/profile/avatar" method="POST" enctype="multipart/form-data">
+        <label class="glass-btn cursor-pointer">
+          <i class="fas fa-upload"></i> Изменить фото
+          <input type="file" name="avatar" accept="image/*" class="hidden" onchange="this.form.submit()">
+        </label>
+      </form>
+    </div>
+  </main>
+
+
+  <!-- Подключаем JS -->
+   <script src="/js/header.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script>
+    // === Плавное появление при скролле ===
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.card, header').forEach(el => {
+      observer.observe(el);
+    });
+
+    // === Загрузка данных профиля ===
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch('/api/profile');
+        if (!res.ok) throw new Error('Не удалось загрузить профиль');
+        
+        const data = await res.json();
+
+        document.getElementById('username').textContent = data.username;
+        document.getElementById('created-at').textContent = new Date(data.created_at).toLocaleDateString('ru');
+
+        const avatarUrl = data.avatar_url || '/img/default-avatar.png';
+        const img = document.getElementById('current-avatar');
+        img.src = avatarUrl;
+        img.onload = () => img.style.opacity = 1;
+
+        document.getElementById('header-avatar').src = avatarUrl;
+
+        const s = data.stats;
+        document.getElementById('total-proposals').textContent = s.total_proposals || 0;
+        document.getElementById('approved-proposals').textContent = `${s.approved_proposals || 0} (${s.approval_rate}%)`;
+        document.getElementById('total-votes').textContent = `${s.total_votes || 0} ${plural(s.total_votes || 0, 'раз', 'раза', 'раз')}`;
+        document.getElementById('total-rooms').textContent = s.total_rooms || 0;
+        document.getElementById('active-room').textContent = s.active_room;
+
+        const activityList = document.getElementById('activity-list');
+        if (data.activity && data.activity.length > 0) {
+          activityList.innerHTML = '';
+          data.activity.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'activity-item';
+            el.innerHTML = `
+              <span class="activity-icon">
+                <i class="fas fa-${getIconClass(item.icon)}"></i>
+              </span>
+              <div>
+                <div class="activity-text">${item.text}</div>
+                <div class="activity-time">${formatDateTime(item.time)}</div>
+              </div>
+            `;
+            activityList.appendChild(el);
+          });
+        } else {
+          activityList.innerHTML = '<p class="text-gray-500 text-sm">Нет активности</p>';
+        }
+
+        const toggle = document.getElementById('toggle-notifications');
+        const toggleBg = document.getElementById('toggle-bg');
+        const toggleLabel = document.getElementById('toggle-label');
+        const enabled = data.notifications_enabled;
+        toggle.checked = enabled;
+        toggleBg.style.background = enabled ? 'linear-gradient(90deg, #4f46e5, #3b82f6)' : '#e2e8f0';
+        toggleLabel.textContent = enabled ? 'Уведомления включены' : 'Уведомления выключены';
+
+        toggle.addEventListener('change', async () => {
+          const newEnabled = toggle.checked;
+          try {
+            const res = await fetch('/api/toggle-notifications', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ enabled: newEnabled })
+            });
+
+            if (res.ok) {
+              location.reload();
+            } else {
+              toggle.checked = !newEnabled;
+              alert('Не удалось сохранить');
+            }
+          } catch (err) {
+            toggle.checked = !newEnabled;
+            alert('Ошибка');
+          }
+        });
+
+      } catch (err) {
+        console.error('Ошибка:', err);
+        alert('Не удалось загрузить данные');
+      }
+    });
+        // Плавный рост цифр (анимация счёта)
+    function animateCounter(element, target, duration = 1500) {
+      const start = 0;
+      const increment = target / (duration / 16);
+      let current = 0;
+
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          element.textContent = target;
+          clearInterval(timer);
+        } else {
+          element.textContent = Math.floor(current);
+        }
+      }, 16);
+    }
+
+    // Пример вызова (в DOMContentLoaded, после загрузки данных)
+    // animateCounter(document.getElementById('total-proposals'), 42);
+
+    function plural(n, one, two, many) {
+      if (n % 10 === 1 && n % 100 !== 11) return one;
+      if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return two;
+      return many;
+    }
+
+    function formatDateTime(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function getIconClass(icon) {
+      switch (icon) {
+        case 'check': return 'check-circle text-green-500';
+        case 'vote': return 'vote-yea text-blue-500';
+        case 'bell': return 'bell text-indigo-500';
+        case 'edit': return 'pencil-alt text-yellow-500';
+        case 'room': return 'door-open text-purple-500';
+        default: return 'circle text-gray-400';
+      }
+    }
+    // === Липкий хедер с анимацией ===
+  const headerWrapper = document.querySelector('.header-wrapper');
+  const headerContainer = document.querySelector('.header-container');
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 100) {
+      headerWrapper.classList.add('sticky');
+    } else {
+      headerWrapper.classList.remove('sticky');
+    }
+    
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,284 @@
+/* Карточки — liquid glass */
+.card {
+  background: rgba(26, 26, 46, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  padding: 24px;
+  opacity: 0;
+  transform: translateY(20px);
+  margin-bottom: 24px;
+}
+
+.card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+
+/* Аватарка */
+.avatar-large {
+  width: 120px;
+  height: 120px;
+  border: 3px solid rgba(139, 92, 246, 0.3);
+  border-radius: 50%;
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.3),
+    0 0 30px rgba(139, 92, 246, 0.15); /* мягкое свечение */
+  transition: all 0.3s ease;
+  margin: 0 auto 20px;
+  object-fit: cover; /* если аватар не квадратный */
+  opacity: 0.8;
+}
+
+.avatar-large:hover {
+  transform: scale(1.08);
+  border-color: #8b5cf6;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(139, 92, 246, 0.25);
+  opacity: 1;
+}
+
+
+/* Заголовки */
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #c4b5fd;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  border-radius: 2px;
+}
+
+/* Активность */
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+  transition: background 0.2s;
+}
+
+.activity-item:hover {
+  background: rgba(139, 92, 246, 0.05);
+  border-radius: 6px;
+  padding-left: 10px;
+}
+
+.activity-icon {
+  color: #a78bfa;
+}
+
+.activity-text {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #f3f4f6;
+}
+
+.activity-time {
+  font-size: 0.75rem;
+  color: #9fa6c4;
+}
+
+/* Тумблер */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-bg {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #374151;
+  border-radius: 30px;
+  transition: 0.3s;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-bg::before {
+  position: absolute;
+  content: '';
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+input:checked + .toggle-bg {
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+
+input:checked + .toggle-bg::before {
+  transform: translateX(22px);
+}
+
+/* Кнопка */
+.glass-btn {
+  background: rgba(109, 40, 217, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #d8b4fe;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.8rem 1.6rem;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+.glass-btn.full-width {
+  width: 100%;
+  max-width: 240px;
+  justify-content: center;
+}
+.glass-btn:hover {
+  background: rgba(139, 92, 246, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+
+.glass-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.glass-btn:hover::after {
+  opacity: 1;
+  transform: translate(10%, 10%);
+}
+
+/* Основная карточка профиля — с эффектом свечения */
+.card-profile {
+  position: relative;
+  background: rgba(26, 26, 46, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 20px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.2),
+    0 0 15px rgba(139, 92, 246, 0.1);
+  overflow: hidden;
+  padding: 35px;
+  text-align: center;
+  transition: all 0.3s ease;
+  transform: translateY(20px);
+  opacity: 0;
+  margin-bottom: 15px;
+}
+
+.card-profile.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Мягкое свечение при наведении */
+.card-profile:hover {
+  transform: translateY(-8px);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 25px rgba(139, 92, 246, 0.2);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+/* Градиентная подсветка снизу */
+.card-profile::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0), rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0));
+  border-radius: 2px;
+  transition: opacity 0.3s;
+}
+
+.card-profile:hover::before {
+  opacity: 1;
+}
+/* Статистика — иконки слева */
+.grid-two {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .grid-two {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.stat-item {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  transition: all 0.2s;
+}
+
+.stat-item:hover {
+  background: rgba(139, 92, 246, 0.1);
+  transform: translateY(-2px);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.stat-item i {
+  font-size: 0.9rem;
+}

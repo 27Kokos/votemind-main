@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Регистрация — VoteMind</title>
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="auth">
+  <div class="auth-card">
+    <h2 class="auth-title">Создайте аккаунт</h2>
+
+    <form action="/auth/register" method="POST" class="auth-form" id="register-form">
+      <div class="auth-input-group">
+        <input
+          name="username"
+          id="username"
+          class="auth-input"
+          placeholder="Никнейм"
+          required
+          minlength="3"
+        />
+        <i class="fas fa-user auth-icon"></i>
+      </div>
+
+      <div class="auth-input-group">
+        <input
+          type="email"
+          name="email"
+          id="email"
+          class="auth-input"
+          placeholder="Email"
+          required
+          autocomplete="new-password"
+        />
+        <i class="fas fa-envelope auth-icon"></i>
+      </div>
+
+      <div class="auth-input-group">
+        <input
+          type="password"
+          name="password"
+          id="password"
+          class="auth-input"
+          placeholder="Пароль"
+          required
+          minlength="6"
+        />
+        <i class="fas fa-lock auth-icon"></i>
+      </div>
+
+      <div id="form-error" class="form-error hidden">
+        <i class="fas fa-exclamation-circle"></i> <span id="error-message"></span>
+      </div>
+
+      <button type="submit" class="auth-btn" id="submit-btn">Зарегистрироваться</button>
+    </form>
+
+    <p class="auth-links">
+      Уже есть аккаунт?
+      <a href="/login">Войти</a>
+    </p>
+  </div>
+</body>
+</html>
