@@ -10,6 +10,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// === Безопасность ===
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -19,13 +20,13 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:"],
-      connectSrc: ["'self'", "https://cdn.jsdelivr.net"], // для source map
+      connectSrc: ["'self'", "https://cdn.jsdelivr.net"],
       upgradeInsecureRequests: null,
     }
   }
 }));
 
-// === Rate Limiting (увеличим лимит для разработки) ===
+// === Rate Limiting ===
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
@@ -33,15 +34,15 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// === Парсинг тела запроса ===
+// === Парсинг тела ===
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 
-// === Подключаем middleware авторизации ===
+// === Middleware авторизации ===
 const requireAuth = require('./src/middlewares/auth');
 
-// === Подключаем роуты (все из папки src/routes) ===
+// === Роуты ===
 const authRoutes = require('./src/routes/auth');
 const roomRoutes = require('./src/routes/rooms');
 const pollRoutes = require('./src/routes/polls');
@@ -87,12 +88,20 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
 });
 
-// === Socket.IO (пока заглушка) ===
+// === Socket.IO ===
 const io = require('socket.io')(server);
 io.use((socket, next) => {
   const req = socket.request;
   const res = {};
   sessionMiddleware(req, res, () => next());
 });
+
+// Сохраняем io в модуль-синглтон
+const ioModule = require('./src/io');
+ioModule.setIo(io);
+
+// Подключаем обработчики сокетов (передаём io)
+const socketHandlers = require('./src/socketHandlers');
+socketHandlers(io);
 
 module.exports = { app, io };

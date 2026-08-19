@@ -1,21 +1,23 @@
 // public/js/charts.js
 
 function renderPollChart(pollData, containerId) {
-  // containerId — это id элемента, в котором будет canvas
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js не загружен, график не будет отрисован');
+    return;
+  }
+
   const container = document.getElementById(containerId);
   if (!container) {
     console.error('Контейнер для графика не найден:', containerId);
     return;
   }
 
-  // Если в контейнере уже есть canvas, используем его, иначе создаём
   let canvas = container.querySelector('canvas');
   if (!canvas) {
     canvas = document.createElement('canvas');
     container.appendChild(canvas);
   }
 
-  // Уничтожаем старый график, если есть
   if (window._chartInstance) {
     window._chartInstance.destroy();
     window._chartInstance = null;
@@ -24,7 +26,6 @@ function renderPollChart(pollData, containerId) {
   const options = pollData.options || [];
   const type = pollData.type || 'single';
 
-  // Подготовка данных
   let labels = options.map(opt => opt.text);
   let dataValues = [];
 
@@ -34,7 +35,6 @@ function renderPollChart(pollData, containerId) {
     dataValues = options.map(opt => Number(opt.votes) || 0);
   }
 
-  // Если нет данных — выходим
   if (dataValues.every(v => v === 0)) {
     container.innerHTML = '<p class="text-gray-500 text-sm">Нет данных для графика</p>';
     return;
@@ -51,16 +51,17 @@ function renderPollChart(pollData, containerId) {
 
   const ctx = canvas.getContext('2d');
 
+  // 🟢 Меняем bar на doughnut (круговая)
   window._chartInstance = new Chart(ctx, {
-    type: 'bar',
+    type: 'doughnut',
     data: {
       labels: labels,
       datasets: [{
         label: type === 'rated_options' ? 'Средняя оценка' : 'Голосов',
         data: dataValues,
         backgroundColor: colors.slice(0, dataValues.length),
-        borderColor: colors.slice(0, dataValues.length).map(c => c.replace('0.8', '1')),
-        borderWidth: 1,
+        borderColor: '#1a1a2e',
+        borderWidth: 2,
       }]
     },
     options: {
@@ -68,26 +69,26 @@ function renderPollChart(pollData, containerId) {
       maintainAspectRatio: true,
       plugins: {
         legend: {
-          display: false,
+          position: 'bottom',
+          labels: {
+            color: '#e0e0ff',
+            padding: 12,
+            usePointStyle: true,
+            pointStyle: 'circle',
+          }
         },
         tooltip: {
           callbacks: {
             label: function(context) {
-              let label = context.dataset.label || '';
+              let label = context.label || '';
               let value = context.raw;
+              let total = context.dataset.data.reduce((a, b) => a + b, 0);
+              let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
               if (type === 'rated_options') {
                 return label + ': ' + Number(value).toFixed(1) + ' / 5';
               }
-              return label + ': ' + Number(value) + ' голосов';
+              return label + ': ' + Number(value) + ' голосов (' + percentage + '%)';
             }
-          }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            stepSize: type === 'rated_options' ? 0.5 : 1,
           }
         }
       }

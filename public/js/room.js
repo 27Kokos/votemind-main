@@ -290,16 +290,24 @@ async function viewPoll(pollId) {
       });
     }
 
-    content.innerHTML = html;
 
-    // Добавляем график
-    const chartContainer = document.createElement('div');
-    chartContainer.id = 'poll-chart-container';
-    chartContainer.style.marginTop = '20px';
-    chartContainer.style.maxHeight = '300px';
-    content.appendChild(chartContainer);
+content.innerHTML = html;
 
-    renderPollChart(currentPoll, 'poll-chart-container');
+// Контейнер для графика
+const chartContainer = document.createElement('div');
+chartContainer.id = 'poll-chart-container';
+chartContainer.style.marginTop = '20px';
+chartContainer.style.maxHeight = '300px';
+content.appendChild(chartContainer);
+
+renderPollChart(currentPoll, 'poll-chart-container');
+
+// 🔥 Кнопка экспорта
+const exportBtn = document.createElement('button');
+exportBtn.className = 'btn-modal save mt-4 w-full';
+exportBtn.innerHTML = '📥 Скачать результаты (CSV)';
+exportBtn.onclick = () => exportPollResults(currentPoll);
+content.appendChild(exportBtn);
   } catch (err) {
     alert('Ошибка загрузки');
     console.error(err);
@@ -556,7 +564,28 @@ function showToast(message, type = 'success') {
   feedback.classList.add('show');
   setTimeout(() => feedback.classList.remove('show'), 2500);
 }
+// === Socket.IO ===
+const socket = io();
 
+// Подключаемся к комнате
+socket.emit('join_room', roomId);
+
+// Слушаем создание нового голосования
+socket.on('poll_created', (poll) => {
+  console.log('📢 Новое голосование!', poll);
+  loadPolls(); // перезагружаем список
+});
+
+// Слушаем обновление голосования
+socket.on('poll_updated', (data) => {
+  console.log('🔄 Голосование обновлено!', data);
+  loadPolls();
+});
+
+// При уходе со страницы
+window.addEventListener('beforeunload', () => {
+  socket.emit('leave_room', roomId);
+});
 // === Инициализация ===
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('room-name')) {

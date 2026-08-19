@@ -2,15 +2,23 @@
 const db = require('../db');
 
 const pollRepository = {
-  findByRoomId(roomId) {
-    return db.prepare(`
+findByRoomId(roomId) {
+  console.log('🔍 findByRoomId: roomId =', roomId);
+  try {
+    const result = db.prepare(`
       SELECT p.id, p.question, p.type, p.created_by,
              (SELECT COUNT(*) FROM votes v WHERE v.poll_id = p.id) AS vote_count
       FROM polls p
       WHERE p.room_id = ?
       ORDER BY p.created_at DESC
     `).all(roomId);
-  },
+    console.log('✅ findByRoomId: результат =', result);
+    return result;
+  } catch (err) {
+    console.error('❌ findByRoomId SQL ошибка:', err);
+    throw err;
+  }
+},
   findById(id) {
     return db.prepare('SELECT * FROM polls WHERE id = ?').get(id);
   },
