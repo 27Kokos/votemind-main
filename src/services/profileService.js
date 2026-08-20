@@ -9,7 +9,6 @@ class ProfileService {
     if (!user) throw new Error('Пользователь не найден');
     const stats = userRepository.getProfileStats(userId);
     const activeRoom = userRepository.getActiveRoom(userId);
-    const activity = userRepository.getActivity(userId);
 
     return {
       ...user,
@@ -20,8 +19,20 @@ class ProfileService {
           ? Math.round((stats.approved_proposals / stats.total_proposals) * 100)
           : 0,
         active_room: activeRoom ? activeRoom.name : '—'
-      },
-      activity
+      }
+    };
+  }
+
+  getActivity(userId, page = 1, limit = 10) {
+    const offset = (page - 1) * limit;
+    const items = userRepository.getActivity(userId, offset, limit);
+    const total = userRepository.getActivityCount(userId);
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
     };
   }
 

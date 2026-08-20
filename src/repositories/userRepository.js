@@ -44,16 +44,16 @@ const userRepository = {
       LIMIT 1
     `).get(userId);
   },
-  getActivity(userId) {
+  getActivity(userId, offset, limit) {
     const activity = [];
-    // Одобренные предложения
+
+    // Одобренные предложения (без LIMIT)
     const approved = db.prepare(`
       SELECT n.created_at, r.name AS room_name
       FROM notifications n
       JOIN rooms r ON n.room_id = r.id
       WHERE n.target_user_id = ? AND n.type = 'approved' AND n.read = 1
       ORDER BY n.created_at DESC
-      LIMIT 10
     `).all(userId);
     approved.forEach(n => activity.push({
       type: 'approved',
@@ -62,14 +62,13 @@ const userRepository = {
       time: n.created_at
     }));
 
-    // Предложил голосование
+    // Предложил голосование (без LIMIT)
     const submitted = db.prepare(`
       SELECT pp.created_at, r.name AS room_name
       FROM poll_proposals pp
       JOIN rooms r ON pp.room_id = r.id
       WHERE pp.proposer_id = ?
       ORDER BY pp.created_at DESC
-      LIMIT 10
     `).all(userId);
     submitted.forEach(p => activity.push({
       type: 'submitted',
@@ -78,7 +77,7 @@ const userRepository = {
       time: p.created_at
     }));
 
-    // Голосовал
+    // Голосовал (без LIMIT)
     const votes = db.prepare(`
       SELECT v.voted_at, r.name AS room_name
       FROM votes v
@@ -86,7 +85,6 @@ const userRepository = {
       JOIN rooms r ON p.room_id = r.id
       WHERE v.user_id = ?
       ORDER BY v.voted_at DESC
-      LIMIT 10
     `).all(userId);
     votes.forEach(v => activity.push({
       type: 'vote',
@@ -95,8 +93,27 @@ const userRepository = {
       time: v.voted_at
     }));
 
+    // Сортируем по времени (от новых к старым)
     activity.sort((a, b) => new Date(b.time) - new Date(a.time));
-    return activity;
+
+    // Применяем пагинацию
+    return activity.slice(offset, offset + limit);
+  },
+  getActivityCount(userId) {
+    const totalApproved = db.prepare(`
+      SELECT COUNT(*) as count FROM notifications
+      WHERE target_user_id = ? AND type = 'approved' AND read = 1
+    `).get(userId).count;
+
+    const totalSubmitted = db.prepare(`
+      SELECT COUNT(*) as count FROM poll_proposals WHERE proposer_id = ?
+    `).get(userId).count;
+
+    const totalVotes = db.prepare(`
+      SELECT COUNT(*) as count FROM votes WHERE user_id = ?
+    `).get(userId).count;
+
+    return totalApproved + totalSubmitted + totalVotes;
   }
 };
 

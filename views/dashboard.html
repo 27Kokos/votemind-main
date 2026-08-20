@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Кабинет — VoteMind</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <link rel="stylesheet" href="/css/main.css">
@@ -11,47 +11,44 @@
   <link rel="stylesheet" href="/css/profile.css">
   <link rel="stylesheet" href="/css/notifications.css">  
   <link rel="stylesheet" href="/css/adaptive.css">
-
 </head>
 <body>
 
-  <!-- Хедер (полная копия из profile.html) -->
-<header>
-  <div class="header-wrapper relative">
-    <!-- Обёртка для борьбы с артефактами Chrome -->
-    <div class="header-border-frame">
-      <div class="header-container">
-        <a href="/dashboard" class="font-bold">VoteMind</a>
-        <div class="flex-between" style="gap: 12px;">
-          <a href="#" class="relative" onclick="window.toggleNotifications(event)">
-            <i class="fas fa-bell text-base hover:text-indigo-600"></i>
-            <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-indigo-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span>
-          </a>
-          <a href="#" class="ml-3" onclick="toggleTheme(event)">
-            <i id="theme-icon" class="fas fa-moon"></i>
-          </a>
-          <a href="/profile" class="flex-between hover:bg-gray-100 px-2 py-1 rounded-lg" style="gap: 6px;">
-            <img id="header-avatar" src="/img/default-avatar.png" class="avatar" alt="Профиль">
-            <span class="text-xs font-medium">Профиль</span>
-          </a>
-          <a href="/auth/logout" class="text-xs text-red-600 hover:text-red-800">Выйти</a>
+  <!-- Хедер -->
+  <header>
+    <div class="header-wrapper relative">
+      <div class="header-border-frame">
+        <div class="header-container">
+          <a href="/dashboard" class="font-bold">VoteMind</a>
+          <div class="flex-between" style="gap: 12px;">
+            <a href="#" class="relative" onclick="window.toggleNotifications(event)">
+              <i class="fas fa-bell text-base hover:text-indigo-600"></i>
+              <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-indigo-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span>
+            </a>
+            <a href="#" onclick="toggleTheme(event)">
+              <i id="theme-icon" class="fas fa-moon"></i>
+            </a>
+            <a href="/profile" class="flex-between hover:bg-gray-100 px-2 py-1 rounded-lg" style="gap: 6px;">
+              <img id="header-avatar" src="/img/default-avatar.png" class="avatar" alt="Профиль">
+              <span class="text-xs font-medium">Профиль</span>
+            </a>
+            <a href="/auth/logout" class="text-xs text-red-600 hover:text-red-800 flex items-center gap-1">
+              <i class="fas fa-sign-out-alt"></i>
+              <span class="logout-text">Выйти</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div id="notifications-menu" class="glass hidden w-80 rounded-xl shadow-xl z-50 overflow-hidden">
+        <div class="p-3 border-b border-white/30 text-sm font-medium text-gray-700">Уведомления</div>
+        <div id="notifications-list">
+          <div class="p-3 text-gray-500 text-sm">Загрузка...</div>
         </div>
       </div>
     </div>
-
-    <!-- Меню уведомлений -->
-    <div id="notifications-menu" class="glass hidden w-80 rounded-xl shadow-xl z-50 overflow-hidden">
-      <div class="p-3 border-b border-white/30 text-sm font-medium text-gray-700">Уведомления</div>
-      <div id="notifications-list">
-        <div class="p-3 text-gray-500 text-sm">Загрузка...</div>
-      </div>
-    </div>
-  </div>
-</header>
-
+  </header>
 
   <div class="spacer" style="height: 80px;"></div>
-
 
   <main class="container mt-8">
     <div class="text-center mb-8">
@@ -61,60 +58,59 @@
     <div id="toast" class="hidden toast">
       <i class="fas fa-check-circle"></i> <span id="toast-message"></span>
     </div>
-  <!-- Действия -->
-<div class="actions-grid mb-8">
-  <!-- Создание комнаты -->
-  <div class="card p-6">
-    <h2 class="section-title">
-      <i class="fas fa-plus-circle text-indigo-400"></i> Создать комнату
-    </h2>
-    <form id="create-room-form" action="/rooms" method="POST">
-      <div class="form-field">
-        <label class="form-label">Название</label>
-        <input type="text" name="name" placeholder="Например: Моя группа" class="form-input" required>
+    <div id="three-container" class="mb-8"></div>
+    <!-- Действия -->
+    <div class="actions-grid mb-8">
+      <div class="card p-6">
+        <h2 class="section-title">
+          <i class="fas fa-plus-circle text-indigo-400"></i> Создать комнату
+        </h2>
+        <form id="create-room-form" action="/rooms" method="POST">
+          <div class="form-field">
+            <label class="form-label">Название</label>
+            <input type="text" name="name" placeholder="Например: Моя группа" class="form-input" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Описание (опционально)</label>
+            <textarea name="description" rows="3" placeholder="Что это за комната?" class="form-input"></textarea>
+          </div>
+          <button type="submit" class="btn-primary w-full">Создать комнату</button>
+        </form>
       </div>
-      <div class="form-field">
-        <label class="form-label">Описание (опционально)</label>
-        <textarea name="description" rows="3" placeholder="Что это за комната?" class="form-input"></textarea>
+
+      <div class="card p-6">
+        <h2 class="section-title">
+          <i class="fas fa-door-open text-blue-400"></i> Присоединиться
+        </h2>
+        <form id="join-room-form" action="/rooms/join" method="POST">
+          <div class="form-field">
+            <label class="form-label">Код приглашения</label>
+            <input type="text" name="inviteCode" maxlength="6" placeholder="AB12CD" class="form-input" required>
+          </div>
+          <button type="submit" class="btn-primary btn-info w-full">Войти в комнату</button>
+        </form>
       </div>
-      <button type="submit" class="btn-primary w-full">Создать комнату</button>
-    </form>
-  </div>
+    </div>
 
-  <!-- Присоединение -->
-  <div class="card p-6">
-    <h2 class="section-title">
-      <i class="fas fa-door-open text-blue-400"></i> Присоединиться
-    </h2>
-    <form id="join-room-form" action="/rooms/join" method="POST">
-      <div class="form-field">
-        <label class="form-label">Код приглашения</label>
-        <input type="text" name="inviteCode" maxlength="6" placeholder="AB12CD" class="form-input" required>
+    <!-- Мои комнаты -->
+    <div class="card p-6 mb-8">
+      <h2 class="section-title">
+        <i class="fas fa-users text-purple-400"></i> Мои комнаты
+      </h2>
+      <div id="rooms-list" class="space-y-3">
+        <p class="text-gray-500 text-sm">Загрузка...</p>
       </div>
-      <button type="submit" class="btn-primary btn-info w-full">Войти в комнату</button>
-    </form>
-  </div>
-</div>
+      <div id="pagination-container" class="mt-4"></div>
+    </div>
 
-<!-- Мои комнаты -->
-<div class="card p-6 mb-8">
-  <h2 class="section-title">
-    <i class="fas fa-users text-purple-400"></i> Мои комнаты
-  </h2>
-  <div id="rooms-list" class="space-y-3">
-    <p class="text-gray-500 text-sm">Пока нет комнат. Создайте первую!</p>
-  </div>
-</div>
-
-<!-- Кнопка предложений -->
-<div class="text-center mb-8">
-  <button onclick="openProposalsModal()" class="glass-btn relative">
-    <i class="fas fa-hand-paper"></i> 
-    <span>Просмотреть предложения</span>
-    <span id="proposals-badge" class="hidden absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
-  </button>
-</div>
-
+    <!-- Кнопка предложений -->
+    <div class="text-center mb-8">
+      <button onclick="openProposalsModal()" class="glass-btn relative">
+        <i class="fas fa-hand-paper"></i> 
+        <span>Просмотреть предложения</span>
+        <span id="proposals-badge" class="hidden absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+      </button>
+    </div>
   </main>
 
   <!-- Модалка предложений -->
@@ -129,24 +125,25 @@
       </div>
     </div>
   </div>
-<!-- Онбординг: Подсказка 1 -->
-<div id="onboarding-overlay" class="onboarding-overlay"></div>
 
-<div id="onboarding-tooltip" class="onboarding-tooltip">
-  <div class="onboarding-content">
-    <h3>🎯 Создайте свою первую комнату</h3>
-    <p>Здесь вы будете создавать голосования и управлять обсуждениями.</p>
-    <button onclick="closeOnboarding()" class="btn-modal save">Понятно!</button>
+  <!-- Онбординг -->
+  <div id="onboarding-overlay" class="onboarding-overlay"></div>
+  <div id="onboarding-tooltip" class="onboarding-tooltip">
+    <div class="onboarding-content">
+      <h3>🎯 Создайте свою первую комнату</h3>
+      <p>Здесь вы будете создавать голосования и управлять обсуждениями.</p>
+      <button onclick="closeOnboarding()" class="btn-modal save">Понятно!</button>
+    </div>
+    <div class="onboarding-arrow"></div>
   </div>
-  <div class="onboarding-arrow"></div>
-</div>
-
-
 
   <!-- JS -->
   <script src="/js/notifications.js"></script>
   <script src="/js/header.js"></script>
-  <script src="/js/dashboard.js?v=2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+  <script src="/js/dashboard.js?v=4"></script>
   <script>
     // Липкий хедер
     const headerWrapper = document.querySelector('.header-wrapper');
@@ -158,146 +155,15 @@
       }
     });
 
-    // Наблюдатель
+    // Анимация карточек
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) entry.target.classList.add('visible');
       });
     }, { threshold: 0.1 });
-
     document.querySelectorAll('.card').forEach(el => observer.observe(el));
 
-    // Загрузка комнат
-    async function loadRooms() {
-      try {
-        const res = await fetch('/rooms/my');
-        const rooms = await res.json();
-        const container = document.getElementById('rooms-list');
-        container.innerHTML = '';
-
-          if (rooms.length === 0) {
-            container.innerHTML = `
-              <p class="text-center text-gray-500 text-sm py-4">
-                <i class="fas fa-inbox text-xl mb-2 opacity-60"></i><br>
-                Пока нет комнат
-              </p>`;
-            return;
-          }
-
-        rooms.forEach(room => {
-          const isOwner = room.is_owner;
-          const roleText = isOwner ? 'Владелец' : 'Участник';
-          const roleClass = isOwner ? 'room-role' : 'room-role bg-blue-600';
-          
-          const el = document.createElement('a');
-          el.href = `/room/${room.id}`;
-          el.className = 'room-card';
-          el.innerHTML = `
-            <h3 class="room-name">${room.name}</h3>
-            <p class="room-desc">${room.description || 'Без описания'}</p>
-            <p class="room-code">Код: <strong>${room.invite_code}</strong></p>
-            <span class="${roleClass}">${roleText}</span>
-          `;
-          container.appendChild(el);
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(20px)';
-          container.appendChild(el);
-          // Анимация
-          setTimeout(() => {
-            el.style.transition = 'all 0.3s ease';
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0)';
-          }, 10);
-
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    // Предложения — логика
-    async function loadProposals() {
-      const list = document.getElementById('proposals-list');
-      list.innerHTML = '<p class="text-gray-400">Загрузка...</p>';
-
-      try {
-        const rooms = await fetch('/rooms/my').then(r => r.json());
-        const ownerRooms = rooms.filter(r => r.is_owner);
-        if (ownerRooms.length === 0) {
-          list.innerHTML = '<p class="text-gray-400">Вы не владеете комнатами</p>';
-          return;
-        }
-
-        const all = [];
-        for (const r of ownerRooms) {
-          const res = await fetch(`/proposals/room/${r.id}`);
-          if (res.ok) all.push(...await res.json());
-        }
-
-        if (all.length === 0) {
-          list.innerHTML = '<p class="text-gray-400">Нет предложений</p>';
-          return;
-        }
-
-        list.innerHTML = '';
-        all.forEach(p => {
-          const item = document.createElement('div');
-          item.className = 'p-3 border-b border-gray-700';
-          item.innerHTML = `
-            <div class="font-medium text-white">${p.question}</div>
-            <div class="text-sm text-gray-400">от @${p.username} в "${p.room_name}"</div>
-            <div class="mt-3 space-x-2">
-              <button onclick="approveProposal(${p.id})" class="btn-primary btn-success text-xs">✅ Одобрить</button>
-              <button onclick="rejectProposal(${p.id})" class="btn-primary text-xs">❌ Отклонить</button>
-            </div>
-          `;
-          list.appendChild(item);
-        });
-      } catch (err) {
-        list.innerHTML = '<p class="text-red-400">Ошибка</p>';
-      }
-      // После загрузки предложений — обнови бейдж
-      const badge = document.getElementById('proposals-badge');
-        if (all.length > 0) {
-          badge.classList.remove('hidden');
-          badge.textContent = all.length > 9 ? '9+' : all.length;
-        } else {
-          badge.classList.add('hidden');
-        }
-    }
-
-    async function approveProposal(id) {
-      const res = await fetch(`/proposals/approve/${id}`, { method: 'POST' });
-      if (res.ok) {
-        alert('Одобрено!');
-        loadProposals();
-        fetchGlobalNotifications();
-      }
-    }
-
-    function rejectProposal(id) {
-      if (confirm('Отклонить?')) {
-        fetch(`/proposals/reject/${id}`, { method: 'POST' })
-          .then(() => location.reload())
-          .catch(() => alert('Ошибка'));
-      }
-    }
-
-    function openProposalsModal() {
-      document.getElementById('proposals-modal').classList.remove('hidden');
-      loadProposals();
-    }
-
-    function closeProposalsModal() {
-      document.getElementById('proposals-modal').classList.add('hidden');
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      loadRooms();
-      fetchGlobalNotifications();
-      setInterval(fetchGlobalNotifications, 10000);
-    });
-
+    // Горячие клавиши
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === 'n') {
         e.preventDefault();
@@ -312,7 +178,6 @@
         document.getElementById('onboarding-overlay')?.classList.contains('active') && closeOnboarding();
       }
     });
-
   </script>
 </body>
 </html>

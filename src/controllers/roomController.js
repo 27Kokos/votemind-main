@@ -26,14 +26,19 @@ const roomController = {
     }
   },
 
-  getMyRooms(req, res) {
-    try {
-      const rooms = roomService.getMyRooms(req.session.userId);
-      res.json(rooms);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  },
+// src/controllers/roomController.js
+
+getMyRooms(req, res) {
+  try {
+    const userId = req.session.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
+    const data = roomService.getMyRoomsPaginated(userId, page, limit);
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+},
 
   getRoom(req, res) {
     try {

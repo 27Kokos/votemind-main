@@ -226,6 +226,8 @@ document.getElementById('create-poll-modal-form')?.addEventListener('submit', as
     console.error(err);
   }
 });
+
+/// ВСТАВЬ ЭТУ ФУНКЦИЮ ВМЕСТО СТАРОЙ viewPoll
 async function viewPoll(pollId) {
   try {
     const res = await fetch(`/polls/${pollId}`);
@@ -290,30 +292,52 @@ async function viewPoll(pollId) {
       });
     }
 
+    content.innerHTML = html;
 
-content.innerHTML = html;
+    // --- ГРАФИК (создаём новый контейнер, удаляя старый) ---
+    const oldChartContainer = document.getElementById('poll-chart-container');
+    if (oldChartContainer) oldChartContainer.remove();
 
-// Контейнер для графика
-const chartContainer = document.createElement('div');
-chartContainer.id = 'poll-chart-container';
-chartContainer.style.marginTop = '20px';
-chartContainer.style.maxHeight = '300px';
-content.appendChild(chartContainer);
+    const chartContainer = document.createElement('div');
+    chartContainer.id = 'poll-chart-container';
+    chartContainer.style.marginTop = '20px';
+    chartContainer.style.maxHeight = '300px';
+    content.appendChild(chartContainer);
 
-renderPollChart(currentPoll, 'poll-chart-container');
+    renderPollChart(currentPoll, 'poll-chart-container');
 
-// 🔥 Кнопка экспорта
-const exportBtn = document.createElement('button');
-exportBtn.className = 'btn-modal save mt-4 w-full';
-exportBtn.innerHTML = '📥 Скачать результаты (CSV)';
-exportBtn.onclick = () => exportPollResults(currentPoll);
-content.appendChild(exportBtn);
+    // --- КНОПКИ ЭКСПОРТА ---
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'flex gap-2 mt-4';
+    btnGroup.style.display = 'flex';
+    btnGroup.style.gap = '10px';
+    btnGroup.style.justifyContent = 'center';
+
+    const csvBtn = document.createElement('button');
+    csvBtn.className = 'btn-modal save';
+    csvBtn.innerHTML = '📊 Скачать CSV';
+    csvBtn.onclick = () => exportCSV(currentPoll);
+    btnGroup.appendChild(csvBtn);
+
+    const pdfBtn = document.createElement('button');
+    pdfBtn.className = 'btn-modal save';
+    pdfBtn.style.background = 'rgba(220, 38, 38, 0.2)';
+    pdfBtn.style.border = '1px solid rgba(220, 38, 38, 0.4)';
+    pdfBtn.style.color = '#f87171';
+    pdfBtn.innerHTML = '📄 Скачать PDF';
+    pdfBtn.onclick = () => exportPDF(currentPoll);
+    btnGroup.appendChild(pdfBtn);
+
+    content.appendChild(btnGroup);
+
   } catch (err) {
     alert('Ошибка загрузки');
     console.error(err);
   }
 }
 
+
+// --- Остальные функции без изменений ---
 async function submitVote() {
   const selected = Array.from(document.querySelectorAll('input[type="radio"]:checked, input[type="checkbox"]:checked'))
     .map(el => el.value);
@@ -564,28 +588,22 @@ function showToast(message, type = 'success') {
   feedback.classList.add('show');
   setTimeout(() => feedback.classList.remove('show'), 2500);
 }
+
 // === Socket.IO ===
 const socket = io();
-
-// Подключаемся к комнате
 socket.emit('join_room', roomId);
-
-// Слушаем создание нового голосования
 socket.on('poll_created', (poll) => {
   console.log('📢 Новое голосование!', poll);
-  loadPolls(); // перезагружаем список
+  loadPolls();
 });
-
-// Слушаем обновление голосования
 socket.on('poll_updated', (data) => {
   console.log('🔄 Голосование обновлено!', data);
   loadPolls();
 });
-
-// При уходе со страницы
 window.addEventListener('beforeunload', () => {
   socket.emit('leave_room', roomId);
 });
+
 // === Инициализация ===
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('room-name')) {
@@ -593,7 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Глобально доступные функции
+// Глобальные функции
 window.viewPoll = viewPoll;
 window.editPoll = editPoll;
 window.deletePoll = deletePoll;

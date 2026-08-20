@@ -15,7 +15,6 @@
   top: 12px;
   transform: translateX(-50%) !important;
   animation: slideIn 0.4s ease-out;
-  /* Убираем background и border — они у обёртки */
 }
 
 @keyframes slideIn {
@@ -29,8 +28,7 @@
   }
 }
 
-
-/* ОБЁРТКА — для борьбы с артефактами Chrome */
+/* ОБЁРТКА */
 .header-border-frame {
   position: relative;
   border: 1px solid rgba(139, 92, 246, 0.3);
@@ -41,15 +39,12 @@
   transition: all 0.3s ease;
 }
 
-/* Усиление при липком режиме */
 .header-wrapper.sticky .header-border-frame {
   border-color: rgba(168, 85, 247, 0.6);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 16px rgba(168, 85, 247, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 16px rgba(168, 85, 247, 0.2);
 }
 
-/* Внутренний — с glass-эффектом */
+/* Внутренний контейнер */
 .header-container {
   background: rgba(26, 26, 46, 0.2);
   backdrop-filter: blur(10px);
@@ -62,12 +57,11 @@
   align-items: center;
   transition: all 0.3s ease;
 }
-/* Плавное изменение при липком режиме */
+
 .header-wrapper.sticky .header-container {
   background: rgba(26, 26, 46, 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: none;
 }
 
 /* Ссылки в хедере */
@@ -100,4 +94,82 @@
   transform: scale(1.08);
   border-color: #8b5cf6;
   box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+}
+
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ (до 768px) ===== */
+@media (max-width: 768px) {
+  .header-wrapper {
+    width: 95%;
+    top: 10px;
+  }
+
+  .header-container {
+    min-width: auto;
+    padding: 6px 10px;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  /* Скрываем тексты "Профиль" и "Выйти" */
+  .header-container .text-xs {
+    display: none !important;
+  }
+
+  /* Но саму ссылку выхода НЕ скрываем, только текст внутри */
+  .header-container .logout-text {
+    display: none !important;
+  }
+
+  /* Иконки увеличиваем и делаем ярче */
+  .header-container .fa-bell,
+  .header-container .fa-moon,
+  .header-container .fa-sun,
+  .header-container .fa-sign-out-alt {
+    font-size: 1.1rem !important;
+  }
+
+  /* Иконка выхода красная */
+  .header-container .fa-sign-out-alt {
+    color: #ef4444 !important;
+  }
+
+  /* Аватар чуть меньше */
+  .avatar {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  /* Отступы для удобства нажатия */
+  .header-container a {
+    padding: 6px 8px !important;
+  }
+
+  /* Меню уведомлений */
+  #notifications-menu {
+    width: 280px;
+    right: 4px;
+    top: 45px;
+    max-height: 60vh;
+  }
+}
+
+/* ===== ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ (до 480px) ===== */
+@media (max-width: 480px) {
+  .header-container .fa-bell,
+  .header-container .fa-moon,
+  .header-container .fa-sun,
+  .header-container .fa-sign-out-alt {
+    font-size: 1rem !important;
+  }
+
+  .avatar {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  #notifications-menu {
+    width: 240px;
+    right: 2px;
+    top: 40px;
+  }
 }

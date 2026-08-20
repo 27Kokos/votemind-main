@@ -47,7 +47,29 @@ const roomRepository = {
   getOwnerId(roomId) {
     const row = db.prepare('SELECT owner_id FROM rooms WHERE id = ?').get(roomId);
     return row ? row.owner_id : null;
-  }
-};
+  },
+  // src/repositories/roomRepository.js (добавить в конец)
 
+getMyRoomsPaginated(userId, offset, limit) {
+  return db.prepare(`
+    SELECT r.id, r.name, r.description, r.invite_code,
+           CASE WHEN r.owner_id = ? THEN 1 ELSE 0 END AS is_owner
+    FROM rooms r
+    JOIN room_members rm ON r.id = rm.room_id
+    WHERE rm.user_id = ?
+    ORDER BY r.created_at DESC
+    LIMIT ? OFFSET ?
+  `).all(userId, userId, limit, offset);
+},
+
+getMyRoomsCount(userId) {
+  const row = db.prepare(`
+    SELECT COUNT(*) as count
+    FROM rooms r
+    JOIN room_members rm ON r.id = rm.room_id
+    WHERE rm.user_id = ?
+  `).get(userId);
+  return row.count;
+}
+}
 module.exports = roomRepository;

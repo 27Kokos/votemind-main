@@ -46,6 +46,20 @@ class RoomService {
     const ownerId = roomRepository.getOwnerId(roomId);
     return ownerId === userId;
   }
+  // src/services/roomService.js
+
+getMyRoomsPaginated(userId, page = 1, limit = 5) {
+  const offset = (page - 1) * limit;
+  const items = roomRepository.getMyRoomsPaginated(userId, offset, limit);
+  const total = roomRepository.getMyRoomsCount(userId);
+  return {
+    items,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit)
+  };
+}
 }
 
 module.exports = new RoomService();

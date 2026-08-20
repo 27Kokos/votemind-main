@@ -4,7 +4,6 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Настройка multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = 'public/uploads/avatars';
@@ -27,9 +26,19 @@ const profileController = {
   async getProfileData(req, res) {
     try {
       const userId = req.session.userId;
-      const data = profileService.getProfile(userId);
-      res.json(data);
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      
+      const profile = profileService.getProfile(userId);
+      const activityData = profileService.getActivity(userId, page, limit);
+      
+      console.log('✅ profileData:', { ...profile, activity: activityData }); // лог
+      res.json({
+        ...profile,
+        activity: activityData
+      });
     } catch (err) {
+      console.error(err);
       res.status(500).json({ error: err.message });
     }
   },

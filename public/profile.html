@@ -20,7 +20,6 @@
   <!-- Хедер -->
  <header>
   <div class="header-wrapper relative">
-    <!-- НОВАЯ ОБЁРТКА ДЛЯ ИСПРАВЛЕНИЯ ОБВОДКИ -->
     <div class="header-border-frame">
       <div class="header-container">
         <a href="/dashboard" class="font-bold">VoteMind</a>
@@ -127,6 +126,8 @@
       <div id="activity-list" class="space-y-3">
         <div class="text-gray-500 text-sm">Загрузка...</div>
       </div>
+      <!-- КОНТЕЙНЕР ДЛЯ ПАГИНАЦИИ -->
+      <div id="pagination-container" class="mt-4"></div>
     </div>
 
     <!-- Уведомления -->
@@ -156,155 +157,200 @@
 
 
   <!-- Подключаем JS -->
-   <script src="/js/header.js"></script>
+  <script src="/js/header.js"></script>
   <script src="/js/notifications.js"></script>
-  <script>
-    // === Плавное появление при скролле ===
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
+<script src="/js/header.js"></script>
+<script src="/js/notifications.js"></script>
+<script>
+  // === Плавное появление при скролле ===
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.card, header').forEach(el => {
+    observer.observe(el);
+  });
+
+  // === ПАГИНАЦИЯ ===
+  let currentPage = 1;
+  let totalPages = 1;
+
+  // Функция загрузки профиля с пагинацией
+  async function loadProfile(page = 1) {
+    try {
+      const res = await fetch(`/api/profile?page=${page}&limit=5`); // 👈 ЯВНО УКАЗЫВАЕМ limit=5
+      if (!res.ok) throw new Error('Не удалось загрузить профиль');
+      const data = await res.json();
+
+      // --- Основные данные ---
+      document.getElementById('username').textContent = data.username;
+      document.getElementById('created-at').textContent = new Date(data.created_at).toLocaleDateString('ru');
+
+      const avatarUrl = data.avatar_url || '/img/default-avatar.png';
+      const img = document.getElementById('current-avatar');
+      img.src = avatarUrl;
+      img.onload = () => img.style.opacity = 1;
+      document.getElementById('header-avatar').src = avatarUrl;
+
+      // Статистика
+      const s = data.stats;
+      document.getElementById('total-proposals').textContent = s.total_proposals || 0;
+      document.getElementById('approved-proposals').textContent = `${s.approved_proposals || 0} (${s.approval_rate}%)`;
+      document.getElementById('total-votes').textContent = `${s.total_votes || 0} ${plural(s.total_votes || 0, 'раз', 'раза', 'раз')}`;
+      document.getElementById('total-rooms').textContent = s.total_rooms || 0;
+      document.getElementById('active-room').textContent = s.active_room;
+
+      // --- Активность с пагинацией ---
+      const activityData = data.activity || { items: [], totalPages: 1, page: 1 };
+      renderActivity(activityData);
+
+      // --- Уведомления ---
+      const toggle = document.getElementById('toggle-notifications');
+      const toggleBg = document.getElementById('toggle-bg');
+      const toggleLabel = document.getElementById('toggle-label');
+      const enabled = data.notifications_enabled;
+      toggle.checked = enabled;
+      toggleBg.style.background = enabled ? 'linear-gradient(90deg, #4f46e5, #3b82f6)' : '#e2e8f0';
+      toggleLabel.textContent = enabled ? 'Уведомления включены' : 'Уведомления выключены';
+
+      toggle.addEventListener('change', async () => {
+        const newEnabled = toggle.checked;
+        try {
+          const res = await fetch('/api/toggle-notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: newEnabled })
+          });
+          if (res.ok) {
+            location.reload();
+          } else {
+            toggle.checked = !newEnabled;
+            alert('Не удалось сохранить');
+          }
+        } catch (err) {
+          toggle.checked = !newEnabled;
+          alert('Ошибка');
         }
       });
-    }, { threshold: 0.1 });
 
-    document.querySelectorAll('.card, header').forEach(el => {
-      observer.observe(el);
+    } catch (err) {
+      console.error('Ошибка:', err);
+      alert('Не удалось загрузить данные');
+    }
+  }
+
+  // Рендер активности
+  function renderActivity(activityData) {
+    const container = document.getElementById('activity-list');
+    const paginationContainer = document.getElementById('pagination-container');
+    const items = activityData.items || [];
+    totalPages = activityData.totalPages || 1;
+    currentPage = activityData.page || 1;
+
+    if (items.length === 0) {
+      container.innerHTML = '<p class="text-gray-500 text-sm">Нет активности</p>';
+      paginationContainer.innerHTML = '';
+      return;
+    }
+
+    container.innerHTML = '';
+    items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'activity-item';
+      el.innerHTML = `
+        <span class="activity-icon">
+          <i class="fas fa-${getIconClass(item.icon)}"></i>
+        </span>
+        <div>
+          <div class="activity-text">${item.text}</div>
+          <div class="activity-time">${formatDateTime(item.time)}</div>
+        </div>
+      `;
+      container.appendChild(el);
     });
 
-    // === Загрузка данных профиля ===
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const res = await fetch('/api/profile');
-        if (!res.ok) throw new Error('Не удалось загрузить профиль');
-        
-        const data = await res.json();
+    renderPagination(currentPage, totalPages, paginationContainer);
+  }
 
-        document.getElementById('username').textContent = data.username;
-        document.getElementById('created-at').textContent = new Date(data.created_at).toLocaleDateString('ru');
-
-        const avatarUrl = data.avatar_url || '/img/default-avatar.png';
-        const img = document.getElementById('current-avatar');
-        img.src = avatarUrl;
-        img.onload = () => img.style.opacity = 1;
-
-        document.getElementById('header-avatar').src = avatarUrl;
-
-        const s = data.stats;
-        document.getElementById('total-proposals').textContent = s.total_proposals || 0;
-        document.getElementById('approved-proposals').textContent = `${s.approved_proposals || 0} (${s.approval_rate}%)`;
-        document.getElementById('total-votes').textContent = `${s.total_votes || 0} ${plural(s.total_votes || 0, 'раз', 'раза', 'раз')}`;
-        document.getElementById('total-rooms').textContent = s.total_rooms || 0;
-        document.getElementById('active-room').textContent = s.active_room;
-
-        const activityList = document.getElementById('activity-list');
-        if (data.activity && data.activity.length > 0) {
-          activityList.innerHTML = '';
-          data.activity.forEach(item => {
-            const el = document.createElement('div');
-            el.className = 'activity-item';
-            el.innerHTML = `
-              <span class="activity-icon">
-                <i class="fas fa-${getIconClass(item.icon)}"></i>
-              </span>
-              <div>
-                <div class="activity-text">${item.text}</div>
-                <div class="activity-time">${formatDateTime(item.time)}</div>
-              </div>
-            `;
-            activityList.appendChild(el);
-          });
-        } else {
-          activityList.innerHTML = '<p class="text-gray-500 text-sm">Нет активности</p>';
-        }
-
-        const toggle = document.getElementById('toggle-notifications');
-        const toggleBg = document.getElementById('toggle-bg');
-        const toggleLabel = document.getElementById('toggle-label');
-        const enabled = data.notifications_enabled;
-        toggle.checked = enabled;
-        toggleBg.style.background = enabled ? 'linear-gradient(90deg, #4f46e5, #3b82f6)' : '#e2e8f0';
-        toggleLabel.textContent = enabled ? 'Уведомления включены' : 'Уведомления выключены';
-
-        toggle.addEventListener('change', async () => {
-          const newEnabled = toggle.checked;
-          try {
-            const res = await fetch('/api/toggle-notifications', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ enabled: newEnabled })
-            });
-
-            if (res.ok) {
-              location.reload();
-            } else {
-              toggle.checked = !newEnabled;
-              alert('Не удалось сохранить');
-            }
-          } catch (err) {
-            toggle.checked = !newEnabled;
-            alert('Ошибка');
-          }
-        });
-
-      } catch (err) {
-        console.error('Ошибка:', err);
-        alert('Не удалось загрузить данные');
-      }
-    });
-        // Плавный рост цифр (анимация счёта)
-    function animateCounter(element, target, duration = 1500) {
-      const start = 0;
-      const increment = target / (duration / 16);
-      let current = 0;
-
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-          element.textContent = target;
-          clearInterval(timer);
-        } else {
-          element.textContent = Math.floor(current);
-        }
-      }, 16);
+  // Рендер кнопок пагинации
+  function renderPagination(currentPage, totalPages, container) {
+    if (!container) return;
+    if (totalPages <= 1) {
+      container.innerHTML = '';
+      return;
     }
 
-    // Пример вызова (в DOMContentLoaded, после загрузки данных)
-    // animateCounter(document.getElementById('total-proposals'), 42);
-
-    function plural(n, one, two, many) {
-      if (n % 10 === 1 && n % 100 !== 11) return one;
-      if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return two;
-      return many;
+    let html = '<div class="flex gap-1 justify-center mt-4 flex-wrap">';
+    if (currentPage > 1) {
+      html += `<button onclick="goToPage(${currentPage - 1})" class="pagination-btn">‹</button>`;
     }
-
-    function formatDateTime(dateStr) {
-      const date = new Date(dateStr);
-      return date.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function getIconClass(icon) {
-      switch (icon) {
-        case 'check': return 'check-circle text-green-500';
-        case 'vote': return 'vote-yea text-blue-500';
-        case 'bell': return 'bell text-indigo-500';
-        case 'edit': return 'pencil-alt text-yellow-500';
-        case 'room': return 'door-open text-purple-500';
-        default: return 'circle text-gray-400';
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === currentPage) {
+        html += `<span class="pagination-btn active">${i}</span>`;
+      } else {
+        html += `<button onclick="goToPage(${i})" class="pagination-btn">${i}</button>`;
       }
     }
-    // === Липкий хедер с анимацией ===
+    if (currentPage < totalPages) {
+      html += `<button onclick="goToPage(${currentPage + 1})" class="pagination-btn">›</button>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  function goToPage(page) {
+    if (page === currentPage) return;
+    loadProfile(page);
+    // Убираем скролл вверх – просто оставляем прокрутку на месте
+    // window.scrollTo({ top: 0, behavior: 'smooth' }); // 👈 УБИРАЕМ
+  }
+
+  // === Вспомогательные функции ===
+  function plural(n, one, two, many) {
+    if (n % 10 === 1 && n % 100 !== 11) return one;
+    if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return two;
+    return many;
+  }
+
+  function formatDateTime(dateStr) {
+    const date = new Date(dateStr);
+    // Добавляем полную дату: день.месяц.год часы:минуты
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+  }
+
+  function getIconClass(icon) {
+    // Иконки из FontAwesome, преобразуем наши эмодзи в классы
+    switch (icon) {
+      case '✅': return 'check-circle text-green-500';
+      case '💡': return 'lightbulb text-yellow-500';
+      case '🗳️': return 'vote-yea text-blue-500';
+      default: return 'circle text-gray-400';
+    }
+  }
+
+  // === Липкий хедер ===
   const headerWrapper = document.querySelector('.header-wrapper');
-  const headerContainer = document.querySelector('.header-container');
-
   window.addEventListener('scroll', () => {
     if (window.scrollY > 100) {
       headerWrapper.classList.add('sticky');
     } else {
       headerWrapper.classList.remove('sticky');
     }
-    
   });
-  </script>
+
+  // === Инициализация ===
+  document.addEventListener('DOMContentLoaded', () => {
+    loadProfile(1);
+  });
+</script>
 </body>
 </html>

@@ -12,12 +12,13 @@ function renderPollChart(pollData, containerId) {
     return;
   }
 
-  let canvas = container.querySelector('canvas');
-  if (!canvas) {
-    canvas = document.createElement('canvas');
-    container.appendChild(canvas);
-  }
+  // Очищаем контейнер (чтобы не дублировать canvas)
+  container.innerHTML = '';
 
+  let canvas = document.createElement('canvas');
+  container.appendChild(canvas);
+
+  // Уничтожаем старый график, если есть
   if (window._chartInstance) {
     window._chartInstance.destroy();
     window._chartInstance = null;
@@ -51,16 +52,14 @@ function renderPollChart(pollData, containerId) {
 
   const ctx = canvas.getContext('2d');
 
-  // 🟢 Меняем bar на doughnut (круговая)
   window._chartInstance = new Chart(ctx, {
     type: 'doughnut',
     data: {
       labels: labels,
       datasets: [{
-        label: type === 'rated_options' ? 'Средняя оценка' : 'Голосов',
         data: dataValues,
         backgroundColor: colors.slice(0, dataValues.length),
-        borderColor: '#1a1a2e',
+        borderColor: '#ffffff',
         borderWidth: 2,
       }]
     },
