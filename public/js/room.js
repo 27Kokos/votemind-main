@@ -41,9 +41,22 @@ async function loadRoom() {
   }
 }
 
-// --- Загрузка голосований ---
-async function loadPolls() {
-  try {
+    // --- Загрузка голосований ---
+    async function loadPolls() {
+      try {
+        async function loadPolls() {
+      const container = document.getElementById('polls-list');
+      container.innerHTML = `
+        ${Array(3).fill(`
+          <div class="skeleton-card" style="padding:18px;">
+            <div class="skeleton skeleton-title" style="width:50%;height:18px;margin-bottom:10px;"></div>
+            <div class="skeleton skeleton-desc" style="width:30%;height:12px;margin-bottom:6px;"></div>
+            <div class="skeleton skeleton-code" style="width:20%;height:10px;"></div>
+          </div>
+        `).join('')}
+      `;
+
+    }
     const response = await fetch(`/polls/room/${roomId}`);
     if (!response.ok) throw new Error('Ошибка загрузки');
     const polls = await response.json();
@@ -128,8 +141,8 @@ async function loadRoomProposals() {
           </ul>
         </div>
         <div class="mt-3 flex gap-2">
-          <button onclick="approveProposal(${p.id})" class="btn-modal save text-xs px-3 py-1">✅ Одобрить</button>
-          <button onclick="rejectProposal(${p.id})" class="btn-modal cancel text-xs px-3 py-1">❌ Отклонить</button>
+          <button onclick="approveProposal(${p.id})" class="btn-modal save text-xs px-3 py-1"> Одобрить</button>
+          <button onclick="rejectProposal(${p.id})" class="btn-modal cancel text-xs px-3 py-1"> Отклонить</button>
         </div>
       `;
       content.appendChild(item);

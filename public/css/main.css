@@ -481,3 +481,50 @@ body::before {
   }
 }
 
+/* === SKELETON LOADING === */
+.skeleton {
+  background: linear-gradient(90deg, #2d2d44 25%, #3d3d5c 50%, #2d2d44 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-card {
+  padding: 16px;
+  margin-bottom: 12px;
+  background: rgba(30, 41, 59, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.skeleton-title {
+  width: 60%;
+  height: 20px;
+  margin-bottom: 8px;
+}
+
+.skeleton-desc {
+  width: 80%;
+  height: 14px;
+  margin-bottom: 6px;
+}
+
+.skeleton-code {
+  width: 40%;
+  height: 12px;
+}
+
+/* Светлая тема */
+body.light-theme .skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #edf2f7 50%, #e2e8f0 75%);
+}
+
+body.light-theme .skeleton-card {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: #e2e8f0;
+}

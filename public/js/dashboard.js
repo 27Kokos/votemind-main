@@ -9,12 +9,45 @@ let raycaster, mouse;
 let animationId;
 
 // === Онбординг ===
-function showOnboarding() { /* ... как было */ }
-function closeOnboarding() { /* ... как было */ }
-function showToast(message, type) { /* ... как было */ }
+function showOnboarding() {
+  const overlay = document.getElementById('onboarding-overlay');
+  const tooltip = document.getElementById('onboarding-tooltip');
+  setTimeout(() => {
+    overlay.classList.add('active');
+    tooltip.classList.add('active');
+  }, 300);
+}
 
-// === Загрузка комнат для списка ===
+function closeOnboarding() {
+  const overlay = document.getElementById('onboarding-overlay');
+  const tooltip = document.getElementById('onboarding-tooltip');
+  overlay.classList.remove('active');
+  tooltip.classList.remove('active');
+  localStorage.setItem('seenOnboarding', 'true');
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.getElementById('toast');
+  const msg = document.getElementById('toast-message');
+  msg.textContent = message;
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+
+// === Загрузка комнат для списка (с пагинацией и скелетонами) ===
 async function loadRooms(page = 1) {
+  const container = document.getElementById('rooms-list');
+  // Показываем скелетоны
+  container.innerHTML = `
+    ${Array(3).fill(`
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-desc"></div>
+        <div class="skeleton skeleton-code"></div>
+      </div>
+    `).join('')}
+  `;
+
   try {
     const res = await fetch(`/rooms/my?page=${page}&limit=3`);
     if (!res.ok) throw new Error('Ошибка загрузки комнат');
@@ -30,15 +63,16 @@ async function loadRooms(page = 1) {
     }
     if (!Array.isArray(rooms)) rooms = [];
 
-    const container = document.getElementById('rooms-list');
     const paginationContainer = document.getElementById('pagination-container');
     container.innerHTML = '';
+
     if (rooms.length === 0) {
       container.innerHTML = `<p class="text-center text-gray-500 text-sm py-4">
         <i class="fas fa-inbox text-xl mb-2 opacity-60"></i><br>Пока нет комнат</p>`;
       paginationContainer.innerHTML = '';
       return;
     }
+
     rooms.forEach(room => {
       const isOwner = room.is_owner;
       const roleText = isOwner ? 'Владелец' : 'Участник';
@@ -54,10 +88,11 @@ async function loadRooms(page = 1) {
       `;
       container.appendChild(el);
     });
+
     renderPagination(currentPage, totalPages, paginationContainer);
   } catch (err) {
     console.error(err);
-    document.getElementById('rooms-list').innerHTML = '<p class="text-red-500">Ошибка загрузки комнат</p>';
+    container.innerHTML = '<p class="text-red-500">Ошибка загрузки комнат</p>';
   }
 }
 
@@ -97,7 +132,7 @@ function goToPage(page) {
   loadRooms(page);
 }
 
-// === 3D СЦЕНА с планетами и подписями ===
+// === 3D СЦЕНА (твой код, без изменений) ===
 function init3DScene(rooms) {
   const container = document.getElementById('three-container');
   if (!container) return;
@@ -127,34 +162,29 @@ function init3DScene(rooms) {
   container.style.marginBottom = '30px';
   container.style.boxShadow = '0 10px 40px rgba(0,0,0,0.5)';
 
-  // Сцена
   scene = new THREE.Scene();
   scene.background = null;
 
   const width = container.clientWidth || 800;
   const height = container.clientHeight || 420;
 
-  // Камера
   camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
   camera.position.set(0, 2, 7);
   camera.lookAt(0, 0, 0);
 
-  // WebGL рендерер
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(width, height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   container.appendChild(renderer.domElement);
 
-  // CSS2D рендерер для подписей
   labelRenderer = new THREE.CSS2DRenderer();
   labelRenderer.setSize(width, height);
   labelRenderer.domElement.style.position = 'absolute';
   labelRenderer.domElement.style.top = '0';
   labelRenderer.domElement.style.left = '0';
-  labelRenderer.domElement.style.pointerEvents = 'none'; // чтобы подписи не мешали управлению
+  labelRenderer.domElement.style.pointerEvents = 'none';
   container.appendChild(labelRenderer.domElement);
 
-  // Орбит-контролы
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
@@ -164,11 +194,9 @@ function init3DScene(rooms) {
   controls.enablePan = false;
   controls.target.set(0, 0, 0);
 
-  // Raycaster
   raycaster = new THREE.Raycaster();
   mouse = new THREE.Vector2();
 
-  // Свет
   const ambient = new THREE.AmbientLight(0x404060);
   scene.add(ambient);
   const light1 = new THREE.PointLight(0x8b5cf6, 1.5, 20);
@@ -183,7 +211,6 @@ function init3DScene(rooms) {
 
   createStarField();
 
-  // Создаём планеты
   if (!rooms || rooms.length === 0) {
     rooms = Array.from({ length: 15 }, (_, i) => ({
       id: i+1,
@@ -195,14 +222,11 @@ function init3DScene(rooms) {
 
   createPlanets(rooms);
 
-  // События мыши
   renderer.domElement.addEventListener('mousemove', onMouseMove);
   renderer.domElement.addEventListener('mouseleave', onMouseLeave);
 
-  // Запуск анимации
   animate();
 
-  // Ресайз
   window.addEventListener('resize', onResize);
 }
 
@@ -230,7 +254,6 @@ function createStarField() {
   scene.add(stars);
 }
 
-// Создаём текстуру свечения через Canvas
 function createGlowTexture() {
   const canvas = document.createElement('canvas');
   canvas.width = 128;
@@ -253,22 +276,18 @@ function createPlanets(rooms) {
   const radius = 2.8;
 
   rooms.forEach((room, i) => {
-    // Равномерное распределение по сфере (золотое сечение)
     const phi = Math.acos(1 - 2 * (i + 0.5) / count);
     const theta = Math.PI * (1 + Math.sqrt(5)) * i;
     const x = radius * Math.sin(phi) * Math.cos(theta);
     const y = radius * Math.sin(phi) * Math.sin(theta);
     const z = radius * Math.cos(phi);
 
-    // Размер планеты зависит от количества голосований
     const voteCount = room.vote_count || 0;
     const baseSize = 0.25 + (voteCount / 20) * 0.45;
     const size = Math.min(baseSize, 0.7);
 
-    // Цвет: владелец – фиолетовый, участник – синий
     const color = room.is_owner ? new THREE.Color(0x8b5cf6) : new THREE.Color(0x3b82f6);
 
-    // Создаём сферу с текстурой свечения
     const geometry = new THREE.SphereGeometry(size * 0.8, 16, 16);
     const material = new THREE.MeshBasicMaterial({
       color: color,
@@ -281,7 +300,6 @@ function createPlanets(rooms) {
     scene.add(planet);
     planets.push(planet);
 
-    // Добавляем свечение (спрайт)
     const spriteMaterial = new THREE.SpriteMaterial({
       map: glowTexture,
       color: color,
@@ -294,7 +312,6 @@ function createPlanets(rooms) {
     sprite.position.copy(planet.position);
     scene.add(sprite);
 
-    // Подпись (CSS2DObject) — показывается при наведении
     const labelDiv = document.createElement('div');
     labelDiv.textContent = room.name;
     labelDiv.style.color = '#c4b5fd';
@@ -307,20 +324,14 @@ function createPlanets(rooms) {
     labelDiv.style.border = '1px solid rgba(139,92,246,0.3)';
     labelDiv.style.backdropFilter = 'blur(4px)';
     labelDiv.style.pointerEvents = 'none';
-    labelDiv.style.display = 'none'; // скрыто по умолчанию
+    labelDiv.style.display = 'none';
 
     const label = new THREE.CSS2DObject(labelDiv);
     label.position.set(x, y + size + 0.25, z);
     scene.add(label);
     labelObjects.push(label);
-
-    // Соединительные линии
-    if (i > 0) {
-      // можно добавить линии между ближайшими, но для упрощения оставим как есть
-    }
   });
 
-  // Добавляем соединительные линии между близкими планетами
   if (count > 1) {
     const linePositions = [];
     for (let i = 0; i < count; i++) {
@@ -348,7 +359,6 @@ function createPlanets(rooms) {
   }
 }
 
-// Обработчики мыши
 function onMouseMove(event) {
   const container = document.getElementById('three-container');
   if (!container) return;
@@ -359,14 +369,12 @@ function onMouseMove(event) {
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(planets);
 
-  // Скрываем все подписи
   labelObjects.forEach(label => {
     label.element.style.display = 'none';
   });
 
   if (intersects.length > 0) {
     const hit = intersects[0].object;
-    // Ищем соответствующую подпись
     const idx = planets.indexOf(hit);
     if (idx !== -1 && labelObjects[idx]) {
       labelObjects[idx].element.style.display = 'block';
@@ -401,12 +409,10 @@ function onResize() {
   }
 }
 
-// Анимация
 function animate() {
   animationId = requestAnimationFrame(animate);
   if (controls) controls.update();
 
-  // Вращение планет вокруг своей оси (опционально)
   planets.forEach((planet, i) => {
     planet.rotation.y += 0.005 * (i % 2 === 0 ? 1 : -1);
   });
@@ -419,12 +425,116 @@ function animate() {
   }
 }
 
-// === Загрузка предложений (заглушка) ===
-async function loadProposals() { /* ... */ }
-async function approveProposal(id) { /* ... */ }
-async function rejectProposal(id) { /* ... */ }
-function openProposalsModal() { /* ... */ }
-function closeProposalsModal() { /* ... */ }
+// === ЗАГРУЗКА ПРЕДЛОЖЕНИЙ (ИСПРАВЛЕННАЯ) ===
+async function loadProposals() {
+  const list = document.getElementById('proposals-list');
+  list.innerHTML = '<p class="text-gray-400">Загрузка...</p>';
+
+  try {
+    const roomsRes = await fetch('/rooms/my?limit=999');
+    if (!roomsRes.ok) throw new Error('Не удалось загрузить комнаты');
+    const data = await roomsRes.json();
+    
+    // Извлекаем массив комнат из ответа (с учётом пагинации)
+    let rooms = [];
+    if (Array.isArray(data)) {
+      rooms = data;
+    } else if (data && typeof data === 'object' && Array.isArray(data.items)) {
+      rooms = data.items;
+    }
+    
+    const ownerRooms = rooms.filter(r => r.is_owner);
+    if (ownerRooms.length === 0) {
+      list.innerHTML = '<p class="text-gray-400">Вы не владеете комнатами</p>';
+      return;
+    }
+
+    let allProposals = [];
+    for (const r of ownerRooms) {
+      const res = await fetch(`/proposals/room/${r.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        allProposals = allProposals.concat(data);
+      }
+    }
+
+    if (allProposals.length === 0) {
+      list.innerHTML = '<p class="text-gray-400">Нет предложений</p>';
+      return;
+    }
+
+    list.innerHTML = '';
+    allProposals.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'p-3 border-b border-gray-700';
+      item.innerHTML = `
+        <div class="font-medium text-white">${p.question}</div>
+        <div class="text-sm text-gray-400">от @${p.username} в "${p.room_name}"</div>
+        <div class="mt-3 space-x-2">
+          <button onclick="approveProposal(${p.id})" class="btn-modal save text-xs px-3 py-1"> Одобрить</button>
+          <button onclick="rejectProposal(${p.id})" class="btn-modal cancel text-xs px-3 py-1"> Отклонить</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+
+    const badge = document.getElementById('proposals-badge');
+    if (allProposals.length > 0) {
+      badge.classList.remove('hidden');
+      badge.textContent = allProposals.length > 9 ? '9+' : allProposals.length;
+    } else {
+      badge.classList.add('hidden');
+    }
+  } catch (err) {
+    list.innerHTML = '<p class="text-red-400">Ошибка загрузки</p>';
+    console.error(err);
+  }
+}
+
+// === Одобрить предложение ===
+async function approveProposal(id) {
+  try {
+    const res = await fetch(`/proposals/approve/${id}`, { method: 'POST' });
+    if (res.ok) {
+      alert('Голосование создано!');
+      loadProposals();
+      fetchGlobalNotifications?.();
+    } else {
+      const text = await res.text();
+      alert('Ошибка: ' + text);
+    }
+  } catch (err) {
+    alert('Не удалось одобрить');
+    console.error(err);
+  }
+}
+
+// === Отклонить предложение ===
+async function rejectProposal(id) {
+  if (!confirm('Отклонить предложение?')) return;
+  try {
+    const res = await fetch(`/proposals/reject/${id}`, { method: 'POST' });
+    if (res.ok) {
+      loadProposals();
+    } else {
+      alert('Ошибка при отклонении');
+    }
+  } catch (err) {
+    alert('Не удалось отклонить');
+    console.error(err);
+  }
+}
+
+// === Открыть модалку предложений ===
+function openProposalsModal() {
+  document.getElementById('proposals-modal').classList.remove('hidden');
+  loadProposals();
+}
+
+// === Закрыть модалку предложений ===
+function closeProposalsModal() {
+  document.getElementById('proposals-modal').classList.add('hidden');
+}
 
 // === Инициализация ===
 document.addEventListener('DOMContentLoaded', () => {
@@ -444,6 +554,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Глобально доступные функции
 window.approveProposal = approveProposal;
 window.rejectProposal = rejectProposal;
 window.openProposalsModal = openProposalsModal;

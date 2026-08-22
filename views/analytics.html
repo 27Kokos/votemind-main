@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Аналитика — VoteMind</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/light-theme.css">
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/profile.css">
+  <link rel="stylesheet" href="/css/notifications.css">  
+  <link rel="stylesheet" href="/css/adaptive.css">
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s;
+    }
+    .kpi-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(139, 92, 246, 0.4);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: rgba(139, 92, 246, 0.2);
+      color: #a78bfa;
+    }
+    .kpi-content {
+      flex: 1;
+    }
+    .kpi-number {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      line-height: 1.2;
+    }
+    .kpi-label {
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .chart-card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .chart-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #c4b5fd;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chart-card canvas {
+      max-height: 220px;
+      width: 100% !important;
+    }
+    .full-width {
+      grid-column: 1 / -1;
+    }
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+      .kpi-number {
+        font-size: 1.4rem;
+      }
+    }
+    @media (max-width: 480px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .kpi-card {
+        padding: 14px;
+      }
+      .kpi-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1.2rem;
+      }
+      .kpi-number {
+        font-size: 1.2rem;
+      }
+    }
+    /* Светлая тема */
+    body.light-theme .kpi-card,
+    body.light-theme .chart-card {
+      background: white;
+      border-color: #e2e8f0;
+    }
+    body.light-theme .kpi-number {
+      color: #1e293b;
+    }
+    body.light-theme .kpi-label {
+      color: #64748b;
+    }
+    body.light-theme .chart-card h3 {
+      color: #4c1d95;
+    }
+  </style>
+</head>
+<body>
+  <!-- Хедер (стандартный) -->
+  <header>
+    <div class="header-wrapper relative">
+      <div class="header-border-frame">
+        <div class="header-container">
+          <a href="/dashboard" class="font-bold">VoteMind</a>
+          <div class="flex-between" style="gap: 12px;">
+            <a href="#" class="relative" onclick="window.toggleNotifications(event)">
+              <i class="fas fa-bell text-base hover:text-indigo-600"></i>
+              <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-indigo-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span>
+            </a>
+            <a href="#" onclick="toggleTheme(event)">
+              <i id="theme-icon" class="fas fa-moon"></i>
+            </a>
+            <a href="/profile" class="flex-between hover:bg-gray-100 px-2 py-1 rounded-lg" style="gap: 6px;">
+              <img id="header-avatar" src="/img/default-avatar.png" class="avatar" alt="Профиль">
+              <span class="text-xs font-medium">Профиль</span>
+            </a>
+            <a href="/auth/logout" class="text-xs text-red-600 hover:text-red-800 flex items-center gap-1">
+              <i class="fas fa-sign-out-alt"></i>
+              <span class="logout-text">Выйти</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div id="notifications-menu" class="glass hidden w-80 rounded-xl shadow-xl z-50 overflow-hidden">
+        <div class="p-3 border-b border-white/30 text-sm font-medium text-gray-700">Уведомления</div>
+        <div id="notifications-list">
+          <div class="p-3 text-gray-500 text-sm">Загрузка...</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="spacer" style="height: 80px;"></div>
+
+  <main class="container">
+    <h1 class="text-3xl font-bold mb-6"> Аналитика</h1>
+
+    <!-- KPI Виджеты -->
+    <div class="dashboard-grid" id="stats-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon"><i class="fas fa-users"></i></div>
+        <div class="kpi-content">
+          <div class="kpi-number" id="stat-users">0</div>
+          <div class="kpi-label">Пользователей</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon"><i class="fas fa-door-open"></i></div>
+        <div class="kpi-content">
+          <div class="kpi-number" id="stat-rooms">0</div>
+          <div class="kpi-label">Комнат</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon"><i class="fas fa-poll"></i></div>
+        <div class="kpi-content">
+          <div class="kpi-number" id="stat-polls">0</div>
+          <div class="kpi-label">Голосований</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon"><i class="fas fa-vote-yea"></i></div>
+        <div class="kpi-content">
+          <div class="kpi-number" id="stat-votes">0</div>
+          <div class="kpi-label">Всего голосов</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Графики -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3><i class="fas fa-trophy text-yellow-500"></i> Топ комнат</h3>
+        <canvas id="topRoomsChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3><i class="fas fa-chart-line text-blue-400"></i> Активность по дням</h3>
+        <canvas id="activityChart"></canvas>
+      </div>
+      <div class="chart-card full-width">
+        <h3><i class="fas fa-chart-pie text-purple-400"></i> Распределение голосов</h3>
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+  </main>
+
+  <!-- JS -->
+  <script src="/js/notifications.js"></script>
+  <script src="/js/header.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/js/analytics.js"></script>
+</body>
+</html>

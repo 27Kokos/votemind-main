@@ -220,11 +220,11 @@
       toggle.addEventListener('change', async () => {
         const newEnabled = toggle.checked;
         try {
-          const res = await fetch('/api/toggle-notifications', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enabled: newEnabled })
-          });
+            const res = await fetch('/profile/toggle-notifications', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ enabled: newEnabled })
+            });
           if (res.ok) {
             location.reload();
           } else {

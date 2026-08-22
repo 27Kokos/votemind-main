@@ -75,6 +75,9 @@ app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'views', 'r
 app.get('/dashboard', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'views', 'dashboard.html')));
 app.get('/room/:id', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'views', 'room.html')));
 app.get('/profile', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
+app.get('/analytics', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'analytics.html'));
+});
 
 // 404
 app.use((req, res) => {
